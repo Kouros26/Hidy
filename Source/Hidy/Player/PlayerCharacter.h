@@ -71,7 +71,7 @@ private:
 
 	bool CanSprint() const;
 
-	// Movement bindings
+	//--------------- Movement bindings -----------------
 	void Move(const FInputActionValue& Value);
 
 	void Look(const FInputActionValue& Value);

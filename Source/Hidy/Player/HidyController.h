@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "EnhancedInputSubsystemInterface.h"
-#include "PlayerInputState.h"
 #include "GameFramework/PlayerController.h"
 #include "HidyController.generated.h"
 
@@ -40,4 +39,6 @@ public:
 	//-------------------------------------------
 
 	void HidyController();
+
+	//virtual void SetupInputComponent() override;
 };
