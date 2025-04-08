@@ -102,7 +102,7 @@ void AHidyController::Crouch(const FInputActionValue& Value)
     Chara->bIsCrouched ? Chara->UnCrouch() : Chara->Crouch();
 }
 
-void AHidyController::RPC_Server_UpdateInputState/*_Implementation*/(const FPlayerInputState State)
+void AHidyController::RPC_Server_UpdateInputState_Implementation(const FPlayerInputState State)
 {
     InputState = State;
 }
@@ -111,5 +111,5 @@ void AHidyController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-    //DOREPLIFETIME(AHidyController, InputState);
+    DOREPLIFETIME(AHidyController, InputState);
 }

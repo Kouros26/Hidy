@@ -39,14 +39,13 @@ class HIDY_API AHidyController : public APlayerController
 
 protected:
 
-	//UPROPERTY(Replicated)
+	UPROPERTY(Replicated)
 	FPlayerInputState InputState;
 
 public:
 
 	void HidyController();
 
-	UFUNCTION(BlueprintCallable)
 	FPlayerInputState GetInputState() const;
 	void SetInputState(FPlayerInputState Other);
 
@@ -69,7 +68,7 @@ private:
 
 	void Crouch(const FInputActionValue& Value);
 
-	//UFUNCTION(Server, Reliable)
+	UFUNCTION(Server, Reliable)
 	void RPC_Server_UpdateInputState(const FPlayerInputState State);
 
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
