@@ -10,12 +10,15 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "PreCMCTick.h"
+#include "Camera/CameraComponent.h"
+#include "Components/SpotLightComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	PreTick = CreateDefaultSubobject<UPreCMCTick>(TEXT("PreTick"));
@@ -26,6 +29,20 @@ APlayerCharacter::APlayerCharacter()
 	StrafeSpeedMapCurve.UpdateOrAddKey(100.0f, 1.0f);
 	StrafeSpeedMapCurve.UpdateOrAddKey(130.0f, 2.0f);
 	StrafeSpeedMapCurve.UpdateOrAddKey(180.0f, 2.0f);
+
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
+	SpringArm->SetupAttachment(RootComponent);
+	SpringArm->TargetArmLength = 150.0f;
+	SpringArm->SetRelativeLocation({ 0.0f, 0.0f, 80.0f });
+	SpringArm->bUsePawnControlRotation = true;
+
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	Camera->SetupAttachment(SpringArm);
+
+	Spotlight = CreateDefaultSubobject<USpotLightComponent>(TEXT("Spotlight"));
+	Spotlight->SetupAttachment(GetMesh(), FName("head"));
+	Spotlight->SetRelativeLocation({ 9.0f, 9.0f, 0.0f });
+	Spotlight->SetRelativeRotation({ 0.0f, 0.0f, -90.0f });
 }
 
 void APlayerCharacter::PossessedBy(AController* NewController)
@@ -82,6 +99,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		// Bind Input Actions
 		EnhancedInputComp->BindAction(HidyController->IA_Move, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
 		EnhancedInputComp->BindAction(HidyController->IA_Look, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
+		EnhancedInputComp->BindAction(HidyController->IA_LookGamepad, ETriggerEvent::Triggered, this, &APlayerCharacter::LookGamepad);
 		EnhancedInputComp->BindAction(HidyController->IA_Walk, ETriggerEvent::Triggered, this, &APlayerCharacter::WalkToggle);
 		EnhancedInputComp->BindAction(HidyController->IA_Sprint, ETriggerEvent::Triggered, this, &APlayerCharacter::Sprint);
 		EnhancedInputComp->BindAction(HidyController->IA_Sprint, ETriggerEvent::Completed, this, &APlayerCharacter::StopSprint);
@@ -251,6 +269,15 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 void APlayerCharacter::Look(const FInputActionValue& Value)
 {
 	FVector2D input = Value.Get<FVector2D>();
+
+	HidyController->AddYawInput(input.X);
+	HidyController->AddPitchInput(input.Y);
+}
+
+void APlayerCharacter::LookGamepad(const FInputActionValue& Value)
+{
+	FVector2D input = Value.Get<FVector2D>();
+	input *= GetWorld()->GetDeltaSeconds();
 
 	HidyController->AddYawInput(input.X);
 	HidyController->AddPitchInput(input.Y);

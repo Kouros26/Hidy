@@ -28,6 +28,9 @@ public:
 	UInputAction* IA_Look;
 
 	UPROPERTY(EditDefaultsOnly, Category = Input)
+	UInputAction* IA_LookGamepad;
+
+	UPROPERTY(EditDefaultsOnly, Category = Input)
 	UInputAction* IA_Walk;
 
 	UPROPERTY(EditDefaultsOnly, Category = Input)

@@ -9,6 +9,10 @@
 #include "GameFramework/Character.h"
 #include "PlayerCharacter.generated.h"
 
+class USpotLightComponent;
+class USpringArmComponent;
+class UCameraComponent;
+
 UCLASS()
 class HIDY_API APlayerCharacter : public ACharacter
 {
@@ -20,6 +24,15 @@ class HIDY_API APlayerCharacter : public ACharacter
 	class UPreCMCTick* PreTick = nullptr;
 
 protected:
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera)
+	USpringArmComponent* SpringArm;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Camera)
+	UCameraComponent* Camera;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Light)
+	USpotLightComponent* Spotlight;
 
 	UPROPERTY(Replicated)
 	FPlayerInputState InputState;
@@ -75,6 +88,7 @@ private:
 	void Move(const FInputActionValue& Value);
 
 	void Look(const FInputActionValue& Value);
+	void LookGamepad(const FInputActionValue& Value);
 
 	void WalkToggle(const FInputActionValue& Value);
 
