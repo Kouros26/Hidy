@@ -3,32 +3,32 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "HidyController.h"
+#include "PlayerCharacter.h"
+#include "PlayerInputState.h"
 #include "Components/ActorComponent.h"
 #include "PreCMCTick.generated.h"
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class HIDY_API UPreCMCTick : public UActorComponent
 {
 	GENERATED_BODY()
 
 	class APlayerCharacter* Player;
-	class AHidyController* Controller;
 	class UCharacterMovementComponent* Movement;
 
-public:	
+public:
 	// Sets default values for this component's properties
 	UPreCMCTick();
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-	
-public:	
+
+public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	constexpr void SetController(AHidyController*& NewController) { Controller = NewController; }
 
 private:
 

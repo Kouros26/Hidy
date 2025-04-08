@@ -24,7 +24,6 @@ void UPreCMCTick::BeginPlay()
 	Super::BeginPlay();
 
 	Player = Cast<APlayerCharacter>(GetOwner());
-	Controller = Cast<AHidyController>(Player->GetController());
 	Movement = Player->GetCharacterMovement();
 }
 
@@ -40,7 +39,7 @@ void UPreCMCTick::TickComponent(float DeltaTime, ELevelTick TickType, FActorComp
 
 void UPreCMCTick::UpdateRotationPreTick() const
 {
-	FPlayerInputState state = Controller->GetInputState();
+	FPlayerInputState state = Player->GetInputState();
 
 	if (state.bWantsToStrafe || state.bWantsToAim)
 	{

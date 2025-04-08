@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InputActionValue.h"
+#include "PlayerInputState.h"
 #include "Anims/Gait.h"
 #include "GameFramework/Character.h"
 #include "PlayerCharacter.generated.h"
@@ -12,12 +14,16 @@ class HIDY_API APlayerCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	class AHidyController* Controller = nullptr;
+	class AHidyController* HidyController = nullptr;
 	UCharacterMovementComponent* Movement = nullptr;
 
 	class UPreCMCTick* PreTick = nullptr;
 
 protected:
+
+	UPROPERTY(Replicated)
+	FPlayerInputState InputState;
+
 	FRichCurve StrafeSpeedMapCurve;
 
 	UPROPERTY(BlueprintReadOnly, Category = Anim)
@@ -33,6 +39,7 @@ public:
 	APlayerCharacter();
 
 	virtual void PossessedBy(AController* NewController) override;
+	virtual void OnRep_Controller() override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -52,10 +59,32 @@ public:
 	float CalculateBreakingDeceleration() const;
 	float CalculateGroundFriction() const;
 
+	FPlayerInputState GetInputState() const;
+	void SetInputState(FPlayerInputState Other);
+
 	constexpr EGait GetGait() const { return Gait; }
 	constexpr void SetGait(const EGait newGait) { Gait = newGait; }
+
+	constexpr AHidyController*& GetHidyController() { return HidyController; }
 
 private:
 
 	bool CanSprint() const;
+
+	// Movement bindings
+	void Move(const FInputActionValue& Value);
+
+	void Look(const FInputActionValue& Value);
+
+	void WalkToggle(const FInputActionValue& Value);
+
+	void Sprint(const FInputActionValue& Value);
+	void StopSprint(const FInputActionValue& Value);
+
+	void TryCrouch(const FInputActionValue& Value);
+
+	UFUNCTION(Server, Reliable)
+	void RPC_Server_UpdateInputState(const FPlayerInputState State);
+
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 };

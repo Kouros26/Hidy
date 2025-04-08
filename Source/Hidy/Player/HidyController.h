@@ -17,6 +17,8 @@ class HIDY_API AHidyController : public APlayerController
 {
 	GENERATED_BODY()
 
+public:
+
 	UPROPERTY(EditDefaultsOnly, Category = Input)
 	UInputMappingContext* InputMapping;
 
@@ -37,39 +39,5 @@ class HIDY_API AHidyController : public APlayerController
 
 	//-------------------------------------------
 
-protected:
-
-	UPROPERTY(Replicated)
-	FPlayerInputState InputState;
-
-public:
-
 	void HidyController();
-
-	FPlayerInputState GetInputState() const;
-	void SetInputState(FPlayerInputState Other);
-
-protected:
-
-	void BeginPlay() override;
-
-	virtual void SetupInputComponent() override;
-
-private:
-
-	void Move(const FInputActionValue& Value);
-
-	void Look(const FInputActionValue& Value);
-
-	void WalkToggle(const FInputActionValue& Value);
-
-	void Sprint(const FInputActionValue& Value);
-	void StopSprint(const FInputActionValue& Value);
-
-	void Crouch(const FInputActionValue& Value);
-
-	UFUNCTION(Server, Reliable)
-	void RPC_Server_UpdateInputState(const FPlayerInputState State);
-
-	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 };

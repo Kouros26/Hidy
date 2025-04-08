@@ -7,7 +7,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include <Runtime/AnimGraphRuntime/Public/KismetAnimationLibrary.h>
 
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "PreCMCTick.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -29,18 +32,33 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	Controller = Cast<AHidyController>(NewController);
-	PreTick->SetController(Controller);
+	HidyController = Cast<AHidyController>(NewController);
 
 	if (GetLocalRole() != ROLE_AutonomousProxy)
 		return;
 
 }
 
+void APlayerCharacter::OnRep_Controller()
+{
+	Super::OnRep_Controller();
+
+	HidyController = Cast<AHidyController>(GetController());
+}
+
 // Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (HidyController)
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+			ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(HidyController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(HidyController->InputMapping, 0);
+		}
+	}
 
 	Movement = GetCharacterMovement();
 
@@ -59,6 +77,16 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	if (UEnhancedInputComponent* EnhancedInputComp = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		// Bind Input Actions
+		EnhancedInputComp->BindAction(HidyController->IA_Move, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
+		EnhancedInputComp->BindAction(HidyController->IA_Look, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
+		EnhancedInputComp->BindAction(HidyController->IA_Walk, ETriggerEvent::Triggered, this, &APlayerCharacter::WalkToggle);
+		EnhancedInputComp->BindAction(HidyController->IA_Sprint, ETriggerEvent::Triggered, this, &APlayerCharacter::Sprint);
+		EnhancedInputComp->BindAction(HidyController->IA_Sprint, ETriggerEvent::Completed, this, &APlayerCharacter::StopSprint);
+		EnhancedInputComp->BindAction(HidyController->IA_Crouch, ETriggerEvent::Triggered, this, &APlayerCharacter::TryCrouch);
+	}
 }
 
 bool APlayerCharacter::CanSprint() const
@@ -70,7 +98,7 @@ bool APlayerCharacter::CanSprint() const
 
 	const bool facing = Movement->bOrientRotationToMovement ? true : yawDifference < 50.0f;
 
-	return Controller->GetInputState().bWantsToSprint && facing;
+	return InputState.bWantsToSprint && facing;
 }
 
 EGait APlayerCharacter::GetDesiredGait() const
@@ -80,7 +108,7 @@ EGait APlayerCharacter::GetDesiredGait() const
 		return EGait::SPRINT;
 	}
 
-	if (Controller->GetInputState().bWantsToWalk)
+	if (InputState.bWantsToWalk)
 	{
 		return EGait::WALK;
 	}
@@ -200,4 +228,74 @@ float APlayerCharacter::CalculateGroundFriction() const
 	}
 
 	return mappedAcceleration;
+}
+
+FPlayerInputState APlayerCharacter::GetInputState() const
+{
+	return InputState;
+}
+
+void APlayerCharacter::SetInputState(const FPlayerInputState Other)
+{
+	InputState = Other;
+}
+
+void APlayerCharacter::Move(const FInputActionValue& Value)
+{
+	FVector2D input = Value.Get<FVector2D>();
+
+	AddMovementInput(GetActorRightVector() * input.X);
+	AddMovementInput(GetActorForwardVector() * input.Y);
+}
+
+void APlayerCharacter::Look(const FInputActionValue& Value)
+{
+	FVector2D input = Value.Get<FVector2D>();
+
+	HidyController->AddYawInput(input.X);
+	HidyController->AddPitchInput(input.Y);
+}
+
+void APlayerCharacter::WalkToggle(const FInputActionValue& Value)
+{
+	if (InputState.bWantsToSprint)
+		return;
+
+	InputState.bWantsToWalk = !InputState.bWantsToWalk;
+	RPC_Server_UpdateInputState(InputState);
+}
+
+void APlayerCharacter::Sprint(const FInputActionValue& Value)
+{
+	InputState.bWantsToSprint = true;
+	InputState.bWantsToWalk = false;
+
+	RPC_Server_UpdateInputState(InputState);
+}
+
+void APlayerCharacter::StopSprint(const FInputActionValue& Value)
+{
+	InputState.bWantsToSprint = false;
+
+	RPC_Server_UpdateInputState(InputState);
+}
+
+void APlayerCharacter::TryCrouch(const FInputActionValue& Value)
+{
+	if (Movement->IsFalling())
+		return;
+
+	bIsCrouched ? UnCrouch() : Crouch();
+}
+
+void APlayerCharacter::RPC_Server_UpdateInputState_Implementation(const FPlayerInputState State)
+{
+	InputState = State;
+}
+
+void APlayerCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(APlayerCharacter, InputState);
 }
