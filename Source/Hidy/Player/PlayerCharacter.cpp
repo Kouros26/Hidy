@@ -33,16 +33,24 @@ APlayerCharacter::APlayerCharacter()
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
 	SpringArm->SetupAttachment(RootComponent);
 	SpringArm->TargetArmLength = 150.0f;
-	SpringArm->SetRelativeLocation({ 0.0f, 0.0f, 80.0f });
+	SpringArm->SetRelativeLocation({ 20.0f, 0.0f, 80.0f });
 	SpringArm->bUsePawnControlRotation = true;
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
 
 	Spotlight = CreateDefaultSubobject<USpotLightComponent>(TEXT("Spotlight"));
-	Spotlight->SetupAttachment(GetMesh(), FName("head"));
+	Spotlight->SetupAttachment(GetMesh(), "head");
 	Spotlight->SetRelativeLocation({ 9.0f, 9.0f, 0.0f });
 	Spotlight->SetRelativeRotation({ 0.0f, 0.0f, -90.0f });
+
+	if (fps)
+	{
+		SpringArm->TargetArmLength = 0;
+		SpringArm->SetupAttachment(GetMesh(), "head");
+		SpringArm->SetRelativeLocation({ 20.0f, 12.0f, 0.0f });
+		Camera->SetRelativeLocation({ -10.0f, 0.0f, 0.0f });
+	}
 }
 
 void APlayerCharacter::PossessedBy(AController* NewController)
@@ -78,8 +86,17 @@ void APlayerCharacter::BeginPlay()
 	}
 
 	Movement = GetCharacterMovement();
-
 	Movement->AddTickPrerequisiteComponent(PreTick);
+	Movement->bUseControllerDesiredRotation = true;
+	Movement->bOrientRotationToMovement = false;
+
+	if (fps)
+	{
+		SpringArm->TargetArmLength = 0;
+		SpringArm->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, "head");
+		SpringArm->SetRelativeLocation({ 10.0f, 12.0f, 0.0f });
+		Camera->SetRelativeLocation({ -10.0f, 0.0f, 0.0f });
+	}
 }
 
 // Called every frame

@@ -3,7 +3,6 @@
 
 #include "PreCMCTick.h"
 
-#include "HidyController.h"
 #include "PlayerCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -39,20 +38,20 @@ void UPreCMCTick::TickComponent(float DeltaTime, ELevelTick TickType, FActorComp
 
 void UPreCMCTick::UpdateRotationPreTick() const
 {
-	FPlayerInputState state = Player->GetInputState();
-
-	if (state.bWantsToStrafe || state.bWantsToAim)
-	{
-		
-		Movement->bUseControllerDesiredRotation = true;
-		Movement->bOrientRotationToMovement = false;
-	}
-
-	else
-	{
-;		Movement->bUseControllerDesiredRotation = true;
-		Movement->bOrientRotationToMovement = false;
-	}
+//	FPlayerInputState state = Player->GetInputState();
+//
+//	if (Player->GetIsFPV() || state.bWantsToStrafe || state.bWantsToAim)
+//	{
+//		
+//		Movement->bUseControllerDesiredRotation = true;
+//		Movement->bOrientRotationToMovement = false;
+//	}
+//
+//	else
+//	{
+//;		Movement->bUseControllerDesiredRotation = true;
+//		Movement->bOrientRotationToMovement = false;
+//	}
 
 	if (Movement->IsFalling())
 	{

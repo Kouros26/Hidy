@@ -34,6 +34,9 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Light)
 	USpotLightComponent* Spotlight;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Debug)
+	bool fps = true;
+
 	UPROPERTY(Replicated)
 	FPlayerInputState InputState;
 
@@ -78,7 +81,7 @@ public:
 	constexpr EGait GetGait() const { return Gait; }
 	constexpr void SetGait(const EGait newGait) { Gait = newGait; }
 
-	constexpr AHidyController*& GetHidyController() { return HidyController; }
+	constexpr bool GetIsFPV() const { return fps; }
 
 private:
 
