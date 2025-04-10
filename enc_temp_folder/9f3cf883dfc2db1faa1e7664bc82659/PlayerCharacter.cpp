@@ -114,6 +114,10 @@ void APlayerCharacter::Tick(float DeltaTime)
 	const float angle = FMath::Abs(FMath::FindDeltaAngleDegrees(GetMesh()->GetBoneQuaternion("spine_05").Rotator().Yaw, Camera->GetComponentRotation().Yaw));
 	const float angleHead = FMath::Abs(FMath::FindDeltaAngleDegrees(GetMesh()->GetBoneQuaternion("head").Rotator().Pitch - 90, Camera->GetComponentRotation().Pitch));
 
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Cyan, FString::SanitizeFloat(GetMesh()->GetBoneQuaternion("head").Rotator().Pitch));
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Green, FString::SanitizeFloat(Camera->GetComponentRotation().Pitch));
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, FString::SanitizeFloat(angleHead));
+
 	angle > deltaCamPlayerThreshold || angleHead > deltaCamPlayerThreshold ? GetMesh()->SetVisibility(false) :
 	GetMesh()->SetVisibility(true);
 }
@@ -131,9 +135,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComp->BindAction(HidyController->IA_LookGamepad, ETriggerEvent::Triggered, this, &APlayerCharacter::LookGamepad);
 		EnhancedInputComp->BindAction(HidyController->IA_Walk, ETriggerEvent::Triggered, this, &APlayerCharacter::WalkToggle);
 		EnhancedInputComp->BindAction(HidyController->IA_Sprint, ETriggerEvent::Triggered, this, &APlayerCharacter::Sprint);
-		EnhancedInputComp->BindAction(HidyController->IA_SprintGamepad, ETriggerEvent::Triggered, this, &APlayerCharacter::Sprint);
+		EnhancedInputComp->BindAction(HidyController->IA_Sprint, ETriggerEvent::Completed, this, &APlayerCharacter::StopSprint);
 		EnhancedInputComp->BindAction(HidyController->IA_Crouch, ETriggerEvent::Triggered, this, &APlayerCharacter::TryCrouch);
-		EnhancedInputComp->BindAction(HidyController->IA_Flashlight, ETriggerEvent::Triggered, this, &APlayerCharacter::ToggleLight);
 	}
 }
 
@@ -324,16 +327,15 @@ void APlayerCharacter::WalkToggle(const FInputActionValue& Value)
 
 void APlayerCharacter::Sprint(const FInputActionValue& Value)
 {
-	if (Value.Get<bool>() && !InputState.bWantsToSprint)
-	{
-		InputState.bWantsToSprint = true;
-		InputState.bWantsToWalk = false;
-	}
+	InputState.bWantsToSprint = true;
+	InputState.bWantsToWalk = false;
 
-	else
-	{
-		InputState.bWantsToSprint = false;
-	}
+	RPC_Server_UpdateInputState(InputState);
+}
+
+void APlayerCharacter::StopSprint(const FInputActionValue& Value)
+{
+	InputState.bWantsToSprint = false;
 
 	RPC_Server_UpdateInputState(InputState);
 }
@@ -344,17 +346,6 @@ void APlayerCharacter::TryCrouch(const FInputActionValue& Value)
 		return;
 
 	bIsCrouched ? UnCrouch() : Crouch();
-}
-
-void APlayerCharacter::ToggleLight(const FInputActionValue& InputActionValue)
-{
-	Spotlight->SetVisibility(!Spotlight->IsVisible());
-	RPC_Server_ToggleLight(Spotlight->IsVisible());
-}
-
-void APlayerCharacter::RPC_Server_ToggleLight_Implementation(bool Value)
-{
-	Spotlight->SetVisibility(Value);
 }
 
 void APlayerCharacter::RPC_Server_UpdateInputState_Implementation(const FPlayerInputState State)

@@ -37,13 +37,7 @@ public:
 	UInputAction* IA_Sprint;
 
 	UPROPERTY(EditDefaultsOnly, Category = Input)
-	UInputAction* IA_SprintGamepad;
-
-	UPROPERTY(EditDefaultsOnly, Category = Input)
 	UInputAction* IA_Crouch;
-
-	UPROPERTY(EditDefaultsOnly, Category = Input)
-	UInputAction* IA_Flashlight;
 
 	//-------------------------------------------
 

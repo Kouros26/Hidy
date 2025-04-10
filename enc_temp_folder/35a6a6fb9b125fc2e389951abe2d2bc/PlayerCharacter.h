@@ -99,13 +99,9 @@ private:
 	void WalkToggle(const FInputActionValue& Value);
 
 	void Sprint(const FInputActionValue& Value);
+	void StopSprint(const FInputActionValue& Value);
 
 	void TryCrouch(const FInputActionValue& Value);
-
-	void ToggleLight(const FInputActionValue& InputActionValue);
-
-	UFUNCTION(Server, Reliable)
-	void RPC_Server_ToggleLight(bool Value);
 
 	UFUNCTION(Server, Reliable)
 	void RPC_Server_UpdateInputState(const FPlayerInputState State);
