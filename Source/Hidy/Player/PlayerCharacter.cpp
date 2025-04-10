@@ -112,12 +112,13 @@ void APlayerCharacter::Tick(float DeltaTime)
 		return;
 
 	const float angle = FMath::Abs(FMath::FindDeltaAngleDegrees(GetMesh()->GetBoneQuaternion("spine_05").Rotator().Yaw, Camera->GetComponentRotation().Yaw));
+	const float angleHead = FMath::Abs(FMath::FindDeltaAngleDegrees(GetMesh()->GetBoneQuaternion("head").Rotator().Pitch - 90, Camera->GetComponentRotation().Pitch));
 
-	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Cyan, FString::SanitizeFloat(GetMesh()->GetBoneQuaternion("spine_05").Rotator().Yaw));
-	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Green, FString::SanitizeFloat(Camera->GetComponentRotation().Yaw));
-	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, FString::SanitizeFloat(angle));
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Cyan, FString::SanitizeFloat(GetMesh()->GetBoneQuaternion("head").Rotator().Pitch));
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Green, FString::SanitizeFloat(Camera->GetComponentRotation().Pitch));
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, FString::SanitizeFloat(angleHead));
 
-	angle > deltaCamPlayerThreshold ? GetMesh()->SetVisibility(false) :
+	angle > deltaCamPlayerThreshold || angleHead > deltaCamPlayerThreshold ? GetMesh()->SetVisibility(false) :
 	GetMesh()->SetVisibility(true);
 }
 
