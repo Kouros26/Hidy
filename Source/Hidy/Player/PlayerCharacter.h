@@ -35,6 +35,9 @@ protected:
 	USpotLightComponent* Spotlight;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Debug)
+	float deltaCamPlayerThreshold = 70.0f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Debug)
 	bool fps = true;
 
 	UPROPERTY(Replicated)

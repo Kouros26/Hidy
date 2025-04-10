@@ -13,6 +13,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/SpotLightComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Hidy/Debug/Print.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
@@ -76,6 +77,14 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Movement = GetCharacterMovement();
+	Movement->AddTickPrerequisiteComponent(PreTick);
+	Movement->bUseControllerDesiredRotation = true;
+	Movement->bOrientRotationToMovement = false;
+
+	if (!IsLocallyControlled())
+		return;
+
 	if (HidyController)
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
@@ -84,11 +93,6 @@ void APlayerCharacter::BeginPlay()
 			Subsystem->AddMappingContext(HidyController->InputMapping, 0);
 		}
 	}
-
-	Movement = GetCharacterMovement();
-	Movement->AddTickPrerequisiteComponent(PreTick);
-	Movement->bUseControllerDesiredRotation = true;
-	Movement->bOrientRotationToMovement = false;
 
 	if (fps)
 	{
@@ -104,6 +108,17 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (!IsLocallyControlled())
+		return;
+
+	const float angle = FMath::Abs(FMath::FindDeltaAngleDegrees(GetMesh()->GetBoneQuaternion("spine_05").Rotator().Yaw, Camera->GetComponentRotation().Yaw));
+
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Cyan, FString::SanitizeFloat(GetMesh()->GetBoneQuaternion("spine_05").Rotator().Yaw));
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Green, FString::SanitizeFloat(Camera->GetComponentRotation().Yaw));
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, FString::SanitizeFloat(angle));
+
+	angle > deltaCamPlayerThreshold ? GetMesh()->SetVisibility(false) :
+	GetMesh()->SetVisibility(true);
 }
 
 // Called to bind functionality to input
